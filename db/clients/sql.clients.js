@@ -1,6 +1,5 @@
 const knex = require('knex');
-const products = require('../assets/initialProducts');
-// console.log(products);
+// const products = require('../assets/initialProducts');
 
 module.exports = class Container {
   constructor(config, tableName) {
@@ -13,10 +12,8 @@ module.exports = class Container {
     if (!tableExists) {
       await this.knex.schema.createTable(this.tableName, (table) => {
         table.increments('id').notNullable().primary().unique();
-        // table.integer('code').notNullable().unique();
-        table.string('title', 25).notNullable();
-        table.float('price');
-        table.string('thumbnail');
+        table.string('email', 30).notNullable();
+        table.string('message', 250).notNullable();
       });
       console.log('Table created');
     }

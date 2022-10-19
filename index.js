@@ -1,19 +1,17 @@
 const express = require('express');
+const { Server: HttpServer } = require('http');
+const { Server: SocketServer } = require('socket.io');
+
 const SQLClient = require('./db/clients/sql.clients');
 const dbConfig = require('./db/config');
 const initialProducts = require('./db/assets/initialProducts');
-const { Server: HttpServer } = require('http');
-const { Server: SocketServer } = require('socket.io');
 
 const app = express();
 const httpServer = new HttpServer(app);
 const io = new SocketServer(httpServer);
 const PORT = 8080 || process.env.PORT;
 const productsDB = new SQLClient(dbConfig.mariaDb, 'products');
-
-// const path = require('path');
-// const { formatMessage } = require('./utils/utils');
-// const handlebars = require('express-handlebars');
+const messagesDB = new SQLClient(dbConfig.sqlite, 'messages');
 
 (async () => {
   try {
