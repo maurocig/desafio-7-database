@@ -5,6 +5,10 @@ const { Server: SocketServer } = require('socket.io');
 const SQLClient = require('./db/clients/sql.clients');
 const dbConfig = require('./db/config');
 const initialProducts = require('./db/assets/initialProducts');
+const {
+  createMessagesTable,
+  createProductsTable,
+} = require('./db/utils/createTables');
 
 const app = express();
 const httpServer = new HttpServer(app);
@@ -15,7 +19,8 @@ const messagesDB = new SQLClient(dbConfig.sqlite, 'messages');
 
 (async () => {
   try {
-    await productsDB.createTable();
+    await createProductsTable(dbConfig.mariaDb);
+    await createMessagesTable(dbConfig.sqlite);
     const products = await productsDB.getAll();
     if (products.length === 0) {
       await productsDB.save(initialProducts);
@@ -42,16 +47,17 @@ io.on('connection', async (socket) => {
   console.log('nuevo cliente conectado');
   console.log(socket.id);
 
-  const messages = [];
-  socket.emit('messages', [...messages]);
-
-  socket.on('new-message', (data) => {
-    messages.push(data);
-    io.emit('messages', messages);
-  });
+  const messages = await messagesDB.getAll();
+  socket.emit('messages', messages);
 
   const products = await productsDB.getAll();
   socket.emit('products', products);
+
+  socket.on('new-message', async (data) => {
+    await messagesDB.save(data);
+    const updatedMessages = await messagesDB.getAll();
+    io.emit('messages', updatedMessages);
+  });
 
   socket.on('new-product', async (data) => {
     await productsDB.save(data);

@@ -12,7 +12,7 @@ module.exports = {
   sqlite: {
     client: 'sqlite3',
     connection: {
-      filename: '/db/sql/ecommerce.sqlite',
+      filename: './db/sql/ecommerce.sqlite',
     },
     useNullAsDefault: true,
   },
