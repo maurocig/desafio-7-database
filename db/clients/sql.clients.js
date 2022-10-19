@@ -1,5 +1,5 @@
 const knex = require('knex');
-const products = require('../assets/products');
+const products = require('../assets/initialProducts');
 // console.log(products);
 
 module.exports = class Container {
@@ -10,34 +10,34 @@ module.exports = class Container {
 
   async createTable() {
     const tableExists = await this.knex.schema.hasTable(this.tableName);
-    if (tableExists) {
-      await this.knex.schema.dropTable(this.tableName);
+    if (!tableExists) {
+      await this.knex.schema.createTable(this.tableName, (table) => {
+        table.increments('id').notNullable().primary().unique();
+        // table.integer('code').notNullable().unique();
+        table.string('title', 25).notNullable();
+        table.float('price');
+        table.string('thumbnail');
+      });
+      console.log('Table created');
     }
-    await this.knex.schema.createTable(this.tableName, (table) => {
-      table.increments('id').notNullable().primary();
-      table.string('nombre', 15).notNullable();
-      table.string('codigo', 10).notNullable();
-      table.float('precio');
-      table.integer('stock');
-    });
-    console.log('Table created');
   }
 
   async getAll() {
     try {
-      const file = await this.getFile();
-      // console.log(file)
-      return file;
+      const records = await this.knex
+        .from(this.tableName)
+        .select('id', 'title', 'price', 'thumbnail');
+      console.log('Items retrieved successfully.');
+      return records;
     } catch (error) {
       console.log(error);
     }
   }
 
-  async addItems(items) {
+  async save(items) {
     try {
       await this.knex(this.tableName).insert(items);
       console.log('Items saved successfully.');
-      console.table(items);
     } catch (error) {
       console.log(error);
     }
@@ -82,5 +82,9 @@ module.exports = class Container {
     } catch (error) {
       console.log(error);
     }
+  }
+
+  async disconnect() {
+    this.knex.destroy();
   }
 };

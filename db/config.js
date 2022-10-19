@@ -6,7 +6,7 @@ module.exports = {
       port: 3306,
       user: 'root',
       password: '',
-      database: 'node-sql-coder',
+      database: 'desafio7_db',
     },
   },
   sqlite: {
